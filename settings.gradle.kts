@@ -21,4 +21,4 @@ dependencyResolutionManagement {
 
 rootProject.name = "AndroidTest"
 include(":app")
- 
+include(":pledlibrary")

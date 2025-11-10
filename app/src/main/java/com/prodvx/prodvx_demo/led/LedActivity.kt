@@ -3,6 +3,7 @@ package com.prodvx.prodvx_demo.led
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android_serialport_api.LedUtils
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -11,6 +12,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.lazy.grid.items
@@ -48,7 +50,9 @@ class LedActivity : ComponentActivity() {
                 ) {
                     var text by remember { mutableStateOf("") }
                     val mod = Modifier.fillMaxWidth()
-                    val buttons = listOf(
+                    val ledUtils: LedUtils = LedUtils()
+
+                    val buttonsSdk = listOf(
                         Button (
                             modifier = mod,
                             onClick = {
@@ -73,6 +77,7 @@ class LedActivity : ComponentActivity() {
 //                                changeLedColorSdk(applicationContext, 0, 0x010000FF)
 //                                text = "Using SDK: Intent with action.CHANGE_LED_COLOR, and Extras 'color', 0x0100FF00"
 //                            }) { Text("SDK: Set Leds Half Blue Half Red") },
+
                     )
 
 
@@ -86,9 +91,41 @@ class LedActivity : ComponentActivity() {
                             verticalArrangement = Arrangement.SpaceAround,
                             modifier = Modifier
                                 .weight(1f)
-                        ){ items(buttons) {} }
+                                .width(50.dp)
+                        ){ items(buttonsSdk) {} }
                     }
 
+                    val buttonsPogo = listOf(
+                        Button(
+                            modifier = mod,
+                            onClick = {
+                                ledUtils.ledsController("FF0000")
+                            }) { Text("PogoLed: Set to Red")},
+                        Button(
+                            modifier = mod,
+                            onClick = {
+                                ledUtils.ledsController("00FF00")
+                            }) { Text("PogoLed: Set to Green")},
+                        Button(
+                            modifier = mod,
+                            onClick = {
+                                ledUtils.ledsController("0000FF")
+                            }) { Text("PogoLed: Set to Blue")},
+                    )
+
+                    Row(
+                        modifier = Modifier.fillMaxWidth()
+                    ){
+                        LazyVerticalGrid(
+                            columns = GridCells.Fixed(5),
+                            contentPadding = PaddingValues(16.dp),
+                            horizontalArrangement = Arrangement.spacedBy(8.dp),
+                            verticalArrangement = Arrangement.SpaceAround,
+                            modifier = Modifier
+                                .weight(1f)
+                                .width(50.dp)
+                        ){ items(buttonsPogo) {} }
+                    }
 
                     Button (
                         onClick = {

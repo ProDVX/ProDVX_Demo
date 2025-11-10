@@ -1,25 +1,48 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
 }
 
+
+// 1. Load the Properties file
+val secretsPropertiesFile = rootProject.file("secrets.properties")
+val secrets = Properties()
+
+if(secretsPropertiesFile.exists()) {
+    secrets.load(secretsPropertiesFile.inputStream())
+}
+
 android {
     namespace = "com.prodvx.prodvx_demo"
     compileSdk = 35
+    buildFeatures.buildConfig = true
 
     defaultConfig {
         applicationId = "com.prodvx.prodvx_demo"
         minSdk = 28
+        //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 1
-        versionName = "1.0"
+        versionName = "1.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+
+        buildConfigField("String", "API_TOKEN", "\"\"")
     }
 
     buildTypes {
+        debug {
+            buildConfigField("boolean", "IS_DEVELOPMENT", "true")
+
+            val debugToken = secrets.getProperty("API_TOKEN", "")
+            buildConfigField("String", "API_TOKEN", "\"$debugToken\"")
+
+        }
         release {
+            buildConfigField("boolean", "IS_DEVELOPMENT", "false")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
