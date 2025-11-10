@@ -1,37 +1,34 @@
 package com.prodvx.prodvx_demo.nfc
 
 import android.annotation.SuppressLint
-import android.app.Activity
 import android.app.PendingIntent
-import android.content.Context
 import android.content.Intent
+import android.nfc.NdefMessage
+import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
 import android.nfc.Tag
 import android.os.Build
 import android.os.Bundle
+import android.os.Parcelable
 import androidx.activity.ComponentActivity
-import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 
@@ -39,6 +36,7 @@ class NfcActivity : ComponentActivity() {
     private val TAG = "NfcActivity"
     private var nfcAdapter: NfcAdapter? = null
     private var nfcIdState by mutableStateOf("Waiting for NFC Tag...")
+    private var nfcDataState by mutableStateOf("No Data")
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -49,7 +47,7 @@ class NfcActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NfcScanScreen(nfcId = nfcIdState)
+                    NfcScanScreen(nfcId = nfcIdState, nfcData = nfcDataState)
                 }
             }
         }
@@ -87,6 +85,19 @@ class NfcActivity : ComponentActivity() {
                 val nfcTagId = bytesToHex(idBytes)
                 nfcIdState = "Tag ID: $nfcTagId"
             }
+
+            val rawMessages = intent.getParcelableArrayExtra(NfcAdapter.EXTRA_NDEF_MESSAGES, Parcelable::class.java)
+            if(rawMessages != null) {
+                val messages: List<NdefMessage> = rawMessages
+                    .filterIsInstance<NdefMessage>()
+                    .toList()
+
+                nfcDataState = readNdefRecords(messages)
+            } else {
+                nfcDataState = "No NDEF Data Found"
+            }
+
+
         }
     }
 
@@ -104,22 +115,38 @@ class NfcActivity : ComponentActivity() {
         }
         return sb.toString()
     }
+
+    private fun readNdefRecords(messages: List<NdefMessage>): String {
+        val stringBuilder = StringBuilder()
+
+        for (message in messages) {
+            for (record in message.records) {
+                if (record.tnf == NdefRecord.TNF_WELL_KNOWN && record.type.contentEquals(NdefRecord.RTD_TEXT)) {
+                    try {
+                        val payload = record.payload
+                        val textEncoding = if ((payload[0].toInt() and 0x80) == 0) Charsets.UTF_8 else Charsets.UTF_16
+                        val langugeCodeLength = payload[0].toInt() and 0x3F
+
+
+                        val text = String(
+                            payload,
+                            1 + langugeCodeLength,
+                            payload.size - 1 - langugeCodeLength,
+                            textEncoding
+                        )
+                        stringBuilder.append("Text: $text\n")
+                    } catch(e: Exception) {
+                        stringBuilder.append("Error reading TEXT record: ${e.localizedMessage}\n")
+                    }
+                }
+            }
+        }
+        return if (stringBuilder.isNotEmpty()) stringBuilder.toString().trim() else "No NDEF Text Records Found"
+    }
 }
 
 @Composable
-fun NfcScanScreen(nfcId: String) {
-    var nfcTagId by remember { mutableStateOf("") }
-    val nfcResultLauncher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult()
-    ) { result ->
-        if (result.resultCode == Activity.RESULT_OK) {
-            val data: Intent? = result.data
-            nfcTagId = data?.getStringExtra("nfc_tag_id") ?: "No ID Found"
-        } else if (result.resultCode == Activity.RESULT_CANCELED) {
-            nfcTagId = "NFC Scan Cancelled or Failed."
-        }
-    }
-
+fun NfcScanScreen(nfcId: String, nfcData: String) {
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -131,38 +158,15 @@ fun NfcScanScreen(nfcId: String) {
             modifier = Modifier.padding(top = 16.dp),
             style = MaterialTheme.typography.bodyLarge
         )
+        Text(
+            text = nfcData,
+            modifier = Modifier.padding(top = 8.dp),
+            style = MaterialTheme.typography.bodyMedium
+        )
+        Spacer(modifier = Modifier.height(16.dp))
         if(nfcId != "Waiting for NFC Tag...") {
             Text("Still scanning")
         }
         CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
-    }
-}
-
-@Composable
-fun NfcReaderButton(
-    currentNfcId: String,
-    onLaunchNfcScan: (Context) -> Unit
-) {
-    val context = LocalContext.current
-
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Button(
-            onClick = { onLaunchNfcScan(context) },
-            modifier = Modifier.padding(top = 24.dp)
-        ) {
-            Text("Scan NFC Tag")
-        }
-
-        TextField(
-            value = currentNfcId,
-            onValueChange = { /* NFC ID is read-only */ },
-            label = { Text("Last Scanned NFC ID") },
-            readOnly = true,
-            modifier = Modifier.padding(top = 16.dp)
-        )
     }
 }
