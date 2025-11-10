@@ -74,7 +74,6 @@ class NfcActivity : ComponentActivity() {
         }
     }
 
-
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -121,11 +120,6 @@ fun NfcScanScreen(nfcId: String) {
         }
     }
 
-    NfcReaderButton(
-        currentNfcId = nfcTagId,
-        onLaunchNfcScan = { nfcResultLauncher.launch(Intent(it, NfcActivity::class.java)) }
-    )
-
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
@@ -137,9 +131,10 @@ fun NfcScanScreen(nfcId: String) {
             modifier = Modifier.padding(top = 16.dp),
             style = MaterialTheme.typography.bodyLarge
         )
-        if (nfcId == "Waiting for NFC Tag...") {
-            CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+        if(nfcId != "Waiting for NFC Tag...") {
+            Text("Still scanning")
         }
+        CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
     }
 }
 

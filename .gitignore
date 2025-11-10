@@ -16,4 +16,6 @@
 local.properties
 /.idea/*
 /.kotlin/
+/.idea/
+
 secrets.properties

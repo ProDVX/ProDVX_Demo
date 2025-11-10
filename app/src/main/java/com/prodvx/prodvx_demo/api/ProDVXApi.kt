@@ -1,5 +1,6 @@
 package com.prodvx.prodvx_demo.api
 
+import com.prodvx.prodvx_demo.BuildConfig
 import io.ktor.client.request.header
 import io.ktor.client.request.request
 import io.ktor.client.statement.HttpResponse
@@ -13,6 +14,12 @@ private const val VERSION = "v1"
 private const val API_URL = "${PROTOCOL}://${HOST}:${PORT}/${VERSION}"
 
 var TOKEN: String? = null
+
+fun initApi(){
+    if(BuildConfig.IS_DEVELOPMENT) {
+        TOKEN = BuildConfig.API_TOKEN
+    }
+}
 
 suspend fun sendRequest(method: HttpMethod, endpoint: String, params: Map<String, String>? = null): HttpResponse? {
     try {

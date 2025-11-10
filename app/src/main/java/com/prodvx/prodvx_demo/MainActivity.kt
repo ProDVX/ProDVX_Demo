@@ -14,10 +14,12 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
+import androidx.compose.material3.Checkbox
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
@@ -31,6 +33,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.prodvx.prodvx_demo.adaptive_light.AdaptiveLightActivity
 import com.prodvx.prodvx_demo.api.TOKEN
+import com.prodvx.prodvx_demo.api.initApi
 import com.prodvx.prodvx_demo.api.updateToken
 import com.prodvx.prodvx_demo.led.LedActivity
 import com.prodvx.prodvx_demo.nfc.NfcActivity
@@ -44,14 +47,12 @@ class MainActivity : ComponentActivity() {
     private var apiToken by mutableStateOf<String?>(null)
     private var showTokenDialog by mutableStateOf(false)
 
-    // The launcher to handle the file picker result
     private val pickFileLauncher = registerForActivityResult(
         ActivityResultContracts.OpenDocument()
     ) { uri: Uri? ->
         if (uri != null) {
             val token = readTokenFromUri(uri)
             if (token != null) {
-                // Here, save the token to internal storage and update the state
                 saveTokenToFile(token)
                 apiToken = token
                 showTokenDialog = false
@@ -61,6 +62,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        initApi()
         enableEdgeToEdge()
         setContent {
             AndroidTestTheme {
@@ -72,25 +74,25 @@ class MainActivity : ComponentActivity() {
                 apiToken = loadApiTokenFromFile()
                 println("Token read: $apiToken")
 
-
-
                 var dev by remember{mutableStateOf(false)}
 
                 /**
                  * Dev Build
                  */
-//                Row(
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(16.dp)
-//                ) {
-//                    Text("DevMode")
-//                    Checkbox(
-//                        checked = dev,
-//                        onCheckedChange = { dev = it }
-//                    )
-//                }
+                if(BuildConfig.IS_DEVELOPMENT){
+                    Row(
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(16.dp)
+                    ) {
+                        Text("DevMode")
+                        Checkbox(
+                            checked = dev,
+                            onCheckedChange = { dev = it }
+                        )
+                    }
+                }
 
                 Column(
                     modifier = Modifier.fillMaxSize(),
@@ -102,9 +104,10 @@ class MainActivity : ComponentActivity() {
                     val ledIntent = Intent(this@MainActivity, LedActivity::class.java)
                     ActivityLauncher(this@MainActivity, ledIntent, "LED Demo")
 
+                    val nfcIntent = Intent(this@MainActivity, NfcActivity::class.java)
+                    ActivityLauncher(this@MainActivity, nfcIntent, "NFC")
+
                     if(dev) {
-                        val nfcIntent = Intent(this@MainActivity, NfcActivity::class.java)
-                        ActivityLauncher(this@MainActivity, nfcIntent, "NFC")
                         val testIntent = Intent(this@MainActivity, TestActivity::class.java)
                         ActivityLauncher(this@MainActivity, testIntent, "Test")
                         Button(
@@ -187,7 +190,6 @@ class MainActivity : ComponentActivity() {
     }
 
 }
-
 
 @Composable
 fun ActivityLauncher(ctx: Context, int: Intent, text: String, enabled: Boolean = true) {

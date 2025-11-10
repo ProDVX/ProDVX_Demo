@@ -86,4 +86,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
     runtimeOnly(libs.kotlinx.coroutines.core)
+
+    implementation(project(":pledlibrary"))
 }
