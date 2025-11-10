@@ -5,9 +5,9 @@ A demo application that showcases the different uses of the APPC devices.
 - Adaptive Light technology that adapts the LED ring to the screen content. (S-Series only, API required)
 - LED Control: Manually change the color the the Full Led Bar LED's using either SDK or ProDVX API
 - S-Series Led Demo: Demo Application that showcases the individual led control (S-Series only,  API required)
+- NFC Demo: Test the full functionality of the integrated or external NFC capabilities
 
 _To Come_:
-- NFC Demo: Test the full functionality of the integrated or external NFC capabilities
 - Radar Demo: Test the functionalities of the Radar Motion Sensor
 - Camera: Test some of the different ways to implement the camera on your APPC device
 - Scanner: See what is possible with the barcode scanner
