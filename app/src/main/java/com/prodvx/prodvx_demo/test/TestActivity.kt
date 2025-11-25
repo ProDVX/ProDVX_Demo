@@ -16,7 +16,12 @@ import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 import kotlin.math.pow
 import kotlin.math.sqrt
 
-
+/**
+ * This code is EXPERIMENTAL
+ *
+ * No code is to be used in public/production applications.
+ * Only to be used for examples.
+ */
 class TestActivity: ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -44,8 +49,6 @@ class TestActivity: ComponentActivity() {
             }
         }
     }
-
-
 
     fun getDisplaySizeUsingExample(context: Context) : Unit {
         println("GetDisplaySizeUsingExample")

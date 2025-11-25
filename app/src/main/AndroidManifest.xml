@@ -73,7 +73,6 @@
             android:label="SSeriesLedDemo"
             android:theme="@style/Theme.AndroidTest"
             />
-
         <service
             android:name=".adaptive_light.MediaProjectionService"
             android:enabled="true"
