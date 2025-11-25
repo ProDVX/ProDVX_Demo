@@ -1,5 +1,6 @@
 # ProDVX Android Demo Application
 A demo application that showcases the different uses of the APPC devices.
+_Documentation in progress_
 
 ## Features
 - Adaptive Light technology that adapts the LED ring to the screen content. (S-Series only, API required)
