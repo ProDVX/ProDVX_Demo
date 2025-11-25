@@ -27,9 +27,9 @@ adb install ProDVX_Demo_V1.0.apk // make sure to chec kversion nr
  
 ## Usage
 ### Without API:
-Currently only the LED Demo is available.
+Currently only the LED Demo and NFC is available.
 - Open the app
-- Tap "LED Demo"
+- Tap "LED Demo" or "NFC"
 
 ### With API
 - Ensure that the ProDVX API is running.
