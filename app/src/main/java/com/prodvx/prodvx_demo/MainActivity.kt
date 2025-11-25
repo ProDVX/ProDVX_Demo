@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -35,6 +34,7 @@ import com.prodvx.prodvx_demo.adaptive_light.AdaptiveLightActivity
 import com.prodvx.prodvx_demo.api.TOKEN
 import com.prodvx.prodvx_demo.api.initApi
 import com.prodvx.prodvx_demo.api.updateToken
+import com.prodvx.prodvx_demo.api_demo.ApiDemoActivity
 import com.prodvx.prodvx_demo.led.LedActivity
 import com.prodvx.prodvx_demo.nfc.NfcActivity
 import com.prodvx.prodvx_demo.test.TestActivity
@@ -46,19 +46,17 @@ class MainActivity : ComponentActivity() {
 
     private var apiToken by mutableStateOf<String?>(null)
     private var showTokenDialog by mutableStateOf(false)
-
-    private val pickFileLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            val token = readTokenFromUri(uri)
-            if (token != null) {
-                saveTokenToFile(token)
-                apiToken = token
-                showTokenDialog = false
+    private val pickFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+            uri: Uri? -> if (uri != null) {
+                val token = readTokenFromUri(uri)
+                if (token != null) {
+                    saveTokenToFile(token)
+                    apiToken = token
+                    showTokenDialog = false
+                }
             }
         }
-    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -74,7 +72,8 @@ class MainActivity : ComponentActivity() {
                 apiToken = loadApiTokenFromFile()
                 println("Token read: $apiToken")
 
-                var dev by remember{mutableStateOf(false)}
+                var dev by remember { mutableStateOf(false) }
+                var tokenAvailable by remember { mutableStateOf(TOKEN != null && TOKEN != "") }
 
                 /**
                  * Dev Build
@@ -99,23 +98,49 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    val adaptiveLightIntent = Intent(this@MainActivity, AdaptiveLightActivity::class.java)
-                    ActivityLauncher(this@MainActivity, adaptiveLightIntent, "Adaptive Lighting", TOKEN != null && TOKEN != "")
-                    val ledIntent = Intent(this@MainActivity, LedActivity::class.java)
-                    ActivityLauncher(this@MainActivity, ledIntent, "LED Demo")
-
-                    val nfcIntent = Intent(this@MainActivity, NfcActivity::class.java)
-                    ActivityLauncher(this@MainActivity, nfcIntent, "NFC")
+                    ActivityLauncher(
+                        this@MainActivity,
+                        Intent(
+                            this@MainActivity,
+                            AdaptiveLightActivity::class.java
+                        ),
+                        "Adaptive Lighting",
+                        tokenAvailable,
+                    )
+                    ActivityLauncher(
+                        this@MainActivity,
+                        Intent(
+                            this@MainActivity,
+                            LedActivity::class.java
+                        ),
+                        "LED Demo",
+                    )
+                    ActivityLauncher(
+                        this@MainActivity,
+                        Intent(
+                            this@MainActivity,
+                            NfcActivity::class.java
+                        ),
+                        "NFC",
+                    )
 
                     if(dev) {
-                        val testIntent = Intent(this@MainActivity, TestActivity::class.java)
-                        ActivityLauncher(this@MainActivity, testIntent, "Test")
-                        Button(
-                            modifier = Modifier.padding(16.dp),
-                            onClick = {
-                                val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
-                                startActivity(intent)
-                        }){ Text("ConnectionSettings") }
+                        ActivityLauncher(
+                            this@MainActivity,
+                            Intent(
+                                this@MainActivity,
+                                TestActivity::class.java
+                            ),
+                            "Test"
+                        )
+                        ActivityLauncher(
+                            this@MainActivity,
+                            Intent(
+                                this@MainActivity,
+                                ApiDemoActivity::class.java
+                            ),
+                            "ProDVX API Demo"
+                        )
                     }
 
                     if (showTokenDialog) {
@@ -132,7 +157,7 @@ class MainActivity : ComponentActivity() {
                         )
                     }
 
-                    Button(onClick = { showTokenDialog = true }) { Text("Set new API Token")}
+                    Button(onClick = { showTokenDialog = true }, modifier = Modifier.padding(16.dp)) { Text("Set new API Token")}
                 }
 
                 LaunchedEffect(key1 = apiToken) {
@@ -143,7 +168,6 @@ class MainActivity : ComponentActivity() {
             }
         }
     }
-
     private fun loadApiTokenFromFile(tokenFile: File? = null): String? {
         val file = tokenFile ?: File(filesDir, "configuration/configuration.json")
         return if (file.exists()) {

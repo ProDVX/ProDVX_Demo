@@ -25,6 +25,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
+import com.prodvx.prodvx_demo.BuildConfig
 import com.prodvx.prodvx_demo.LRGB
 import com.prodvx.prodvx_demo.api.sendRequest
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
@@ -95,37 +96,43 @@ class LedActivity : ComponentActivity() {
                         ){ items(buttonsSdk) {} }
                     }
 
-                    val buttonsPogo = listOf(
-                        Button(
-                            modifier = mod,
-                            onClick = {
-                                ledUtils.ledsController("FF0000")
-                            }) { Text("PogoLed: Set to Red")},
-                        Button(
-                            modifier = mod,
-                            onClick = {
-                                ledUtils.ledsController("00FF00")
-                            }) { Text("PogoLed: Set to Green")},
-                        Button(
-                            modifier = mod,
-                            onClick = {
-                                ledUtils.ledsController("0000FF")
-                            }) { Text("PogoLed: Set to Blue")},
-                    )
+                    // PogoLED Buttons
+                    if (BuildConfig.IS_DEVELOPMENT) {
+                        // PLED Buttons
+                        val buttonsPogo = listOf(
+                            Button(
+                                modifier = mod,
+                                onClick = {
+                                    ledUtils.ledsController("FF0000")
+                                }) { Text("PogoLed: Set to Red")},
+                            Button(
+                                modifier = mod,
+                                onClick = {
+                                    ledUtils.ledsController("00FF00")
+                                }) { Text("PogoLed: Set to Green")},
+                            Button(
+                                modifier = mod,
+                                onClick = {
+                                    ledUtils.ledsController("0000FF")
+                                }) { Text("PogoLed: Set to Blue")},
+                        )
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth()
-                    ){
-                        LazyVerticalGrid(
-                            columns = GridCells.Fixed(5),
-                            contentPadding = PaddingValues(16.dp),
-                            horizontalArrangement = Arrangement.spacedBy(8.dp),
-                            verticalArrangement = Arrangement.SpaceAround,
-                            modifier = Modifier
-                                .weight(1f)
-                                .width(50.dp)
-                        ){ items(buttonsPogo) {} }
+                        // PLed Button placing
+                        Row(
+                            modifier = Modifier.fillMaxWidth()
+                        ){
+                            LazyVerticalGrid(
+                                columns = GridCells.Fixed(5),
+                                contentPadding = PaddingValues(16.dp),
+                                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                                verticalArrangement = Arrangement.SpaceAround,
+                                modifier = Modifier
+                                    .weight(1f)
+                                    .width(50.dp)
+                            ){ items(buttonsPogo) {} }
+                        }
                     }
+
 
                     Button (
                         onClick = {
@@ -171,6 +178,7 @@ fun changeLedColorSdk(context: Context, colordemo: Int, color: Int?) {
         intent.putExtra("color", color)
     }
 
+    println("Intent: $intent")
     context.sendBroadcast(intent)
 }
 
