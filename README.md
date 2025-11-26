@@ -14,6 +14,17 @@ _To Come_:
 - Camera: Test some of the different ways to implement the camera on your APPC device
 - Scanner: See what is possible with the barcode scanner
 
+## Documantation
+If looking to implement the features yourself, Search (in program/all files if possible) for the Feature with the following descriptors: \
+_Please note that not all features have been fully documented yet. Please investigate the respective Activity files to find all required code._ \
+_Some features have extensive functionality that is not essential to the functionality._
+- API -> _API:_
+- NFC -> _NFC:_
+- Adaptive Lights -> _AdaptiveLight:_
+- LED -> _LED:_
+- S-Series Leds -> _SLED:_
+- PoGo LED -> _PLED:_
+
 ## Installation
 - Download the App from the releases tab.
 
@@ -24,7 +35,7 @@ _To Come_:
 - Or
   - Install using ADB with 
 ```
-adb install ProDVX_Demo_V1.0.apk // make sure to chec kversion nr
+adb install ProDVX_Demo_Vx.x.apk // Make sure to check your version number
 ```
  
 ## Usage
