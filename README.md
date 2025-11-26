@@ -1,5 +1,5 @@
 # ProDVX Android Demo Application
-A demo application that showcases the different uses of the APPC devices. <br>
+A demo application that showcases the different uses of the APPC devices.\
 _Documentation in progress_
 
 ## Features
@@ -9,6 +9,7 @@ _Documentation in progress_
 - NFC Demo: Test the full functionality of the integrated or external NFC capabilities
 
 _To Come_:
+- API Demo: See the full power of the ProDVX API from 
 - Radar Demo: Test the functionalities of the Radar Motion Sensor
 - Camera: Test some of the different ways to implement the camera on your APPC device
 - Scanner: See what is possible with the barcode scanner
@@ -37,8 +38,9 @@ Currently only the LED Demo and NFC is available.
 - When the app first starts no token is provided.
 - Tap "Set new API Token". You can set it in two ways:
   - Manual entry:
-    - Enter the token or paste from another application
-  - Configuration File
+    - Enter the token using virtual/on-screen keyboard or USB keyboard
+    - Paste from another application
+  - Configuration File:
     - Create a "configuration.json" file  (example below)
     - Place it on the device
     - When tapping above button, tap "Pick a file"
@@ -64,3 +66,6 @@ _**Test Image**_: Set a test image that is applied to the background of the scre
 
 ## Issues
 Please input any issue to the issue tracker.
+
+## Maintenance
+Since this is a project which is focused on internal testing and making simple SDK-like code examples, this codebase is only lightly maintained to develop new features or fix essential bugs. This project gives a complete package for potential customers or current partners and customers to test the possibilities with ProDVX Android Products.
