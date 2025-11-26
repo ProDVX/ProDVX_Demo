@@ -1,5 +1,6 @@
 # ProDVX Android Demo Application
 A demo application that showcases the different uses of the APPC devices.\
+Can also be used for a combined sdk of different features and functionalities.\
 _Documentation in progress_
 
 ## Features
