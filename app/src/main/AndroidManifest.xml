@@ -2,13 +2,20 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <!--API: Required internet permissions -->
     <uses-permission android:name="android.permission.INTERNET"/>
+
+<!--    AdaptiveLight: Required permissions for service-->
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
     <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PROJECTION" />
+
+<!--    AdaptiveLight: Required permissions for image gallery (test image) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
+<!--    NFC: Required permission for NFC usage-->
     <uses-permission android:name="android.permission.NFC" />
-    <uses-feature android:name="android.hardware.nfc" android:required="true" />
+<!--    NFC: Required feature to use NFC-->
+    <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
     <application
         android:allowBackup="true"
@@ -23,7 +30,6 @@
         <activity
             android:name=".MainActivity"
             android:exported="true"
-            android:label="@string/app_name"
             android:theme="@style/Theme.AndroidTest">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -31,16 +37,22 @@
             </intent-filter>
         </activity>
 
+<!--        AdaptiveLight: Activity Registration-->
         <activity
             android:name=".adaptive_light.AdaptiveLightActivity"
             android:exported="false"
             android:label="Adaptive Lighting"
             android:theme="@style/Theme.AndroidTest"
             />
+<!--        NFC: Activity Registration-->
         <activity android:name=".nfc.NfcActivity"
             android:exported="true"
             android:launchMode="singleTop"
             android:theme="@style/Theme.AndroidTest">
+<!--            NFC: Required NFC Intent Filters
+                   Ensure these filters are applied, to catch the NFC intents that are
+                   broadcasted by the NFC reader
+-->
             <intent-filter>
                 <action android:name="android.nfc.action.TAG_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
@@ -55,18 +67,22 @@
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
         </activity>
+<!--        Test Activity Registration (development only) -->
         <activity
             android:name=".test.TestActivity"
             android:exported="false"
             android:label="Test"
             android:theme="@style/Theme.AndroidTest"
             />
+<!--        LED: Activity Registration -->
         <activity
             android:name=".led.LedActivity"
             android:exported="false"
             android:label="Led"
             android:theme="@style/Theme.AndroidTest"
             />
+
+<!--        SLED: Activity Registration -->
         <activity
             android:name=".led.SSeriesLedDemoActivity"
             android:exported="false"
@@ -74,6 +90,7 @@
             android:theme="@style/Theme.AndroidTest"
             />
 
+<!--        AdaptiveLight: Background Service Registration -->
         <service
             android:name=".adaptive_light.MediaProjectionService"
             android:enabled="true"

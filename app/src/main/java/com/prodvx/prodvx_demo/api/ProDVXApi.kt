@@ -7,6 +7,11 @@ import io.ktor.client.statement.HttpResponse
 import io.ktor.http.HttpHeaders
 import io.ktor.http.HttpMethod
 
+/**
+ * API: Singular helper functions for sending requests to the ProDVX API
+ * Each request to api should abide to the API Rules as stated in the Quick Start Guide as found below
+ * https://drive.google.com/file/d/1ZXpp89u16yQ0k4Xwa46akhESqDtbCPYR/view?usp=sharing
+ */
 private const val PROTOCOL = "http"
 private const val HOST = "localhost"
 private const val PORT = "3535"
@@ -42,11 +47,17 @@ suspend fun sendRequest(method: HttpMethod, endpoint: String, params: Map<String
     }
 }
 
-suspend fun sleepDevice(): HttpResponse? {
-    return sendRequest(HttpMethod.Get, "/sleepDevice")
-}
-
+/**
+ * Updates the token from the MainActivity Dialog
+ */
 fun updateToken(newToken: String) {
     println("Set new token: $newToken")
     TOKEN = newToken
+}
+
+/**
+ * Helper Functions for quick requests
+ */
+suspend fun sleepDevice(): HttpResponse? {
+    return sendRequest(HttpMethod.Get, "/sleepDevice")
 }

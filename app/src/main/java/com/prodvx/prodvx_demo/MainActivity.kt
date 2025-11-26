@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
-import android.provider.Settings
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
@@ -35,6 +34,7 @@ import com.prodvx.prodvx_demo.adaptive_light.AdaptiveLightActivity
 import com.prodvx.prodvx_demo.api.TOKEN
 import com.prodvx.prodvx_demo.api.initApi
 import com.prodvx.prodvx_demo.api.updateToken
+import com.prodvx.prodvx_demo.api_demo.ApiDemoActivity
 import com.prodvx.prodvx_demo.led.LedActivity
 import com.prodvx.prodvx_demo.nfc.NfcActivity
 import com.prodvx.prodvx_demo.test.TestActivity
@@ -44,21 +44,25 @@ import java.io.File
 
 class MainActivity : ComponentActivity() {
 
+    // Holder for API token insertion
     private var apiToken by mutableStateOf<String?>(null)
+
+    // State holder for token insertion dialog
     private var showTokenDialog by mutableStateOf(false)
 
-    private val pickFileLauncher = registerForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri: Uri? ->
-        if (uri != null) {
-            val token = readTokenFromUri(uri)
-            if (token != null) {
-                saveTokenToFile(token)
-                apiToken = token
-                showTokenDialog = false
+    // Token file picker launcher
+    private val pickFileLauncher =
+        registerForActivityResult(ActivityResultContracts.OpenDocument()) {
+            uri: Uri? -> if (uri != null) {
+                val token = readTokenFromUri(uri)
+                if (token != null) {
+                    saveTokenToFile(token)
+                    apiToken = token
+                    showTokenDialog = false
+                }
             }
         }
-    }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -66,19 +70,19 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             AndroidTestTheme {
+                // Create a folder to store the configuration file
                 val folder = File(this.filesDir, "configuration")
                 if (!folder.exists()) {
                     folder.mkdir()
                 }
-
+                // Initialization for API Token
                 apiToken = loadApiTokenFromFile()
                 println("Token read: $apiToken")
 
-                var dev by remember{mutableStateOf(false)}
+                var dev by remember { mutableStateOf(false) }
+                var tokenAvailable by remember { mutableStateOf(TOKEN != null && TOKEN != "") }
 
-                /**
-                 * Dev Build
-                 */
+                // Dev Build switch for testing purposes
                 if(BuildConfig.IS_DEVELOPMENT){
                     Row(
                         verticalAlignment = Alignment.CenterVertically,
@@ -99,25 +103,57 @@ class MainActivity : ComponentActivity() {
                     horizontalAlignment = Alignment.CenterHorizontally,
                     verticalArrangement = Arrangement.Center,
                 ) {
-                    val adaptiveLightIntent = Intent(this@MainActivity, AdaptiveLightActivity::class.java)
-                    ActivityLauncher(this@MainActivity, adaptiveLightIntent, "Adaptive Lighting", TOKEN != null && TOKEN != "")
-                    val ledIntent = Intent(this@MainActivity, LedActivity::class.java)
-                    ActivityLauncher(this@MainActivity, ledIntent, "LED Demo")
+                    // AdaptiveLight Activity Launcher
+                    ActivityLauncher(
+                        this@MainActivity,
+                        Intent(
+                            this@MainActivity,
+                            AdaptiveLightActivity::class.java
+                        ),
+                        "Adaptive Lighting",
+                        tokenAvailable,
+                    )
+                    // LED: SLED: Activity Launcher
+                    ActivityLauncher(
+                        this@MainActivity,
+                        Intent(
+                            this@MainActivity,
+                            LedActivity::class.java
+                        ),
+                        "LED Demo",
+                    )
+                    // NFC: Activity Launcher
+                    ActivityLauncher(
+                        this@MainActivity,
+                        Intent(
+                            this@MainActivity,
+                            NfcActivity::class.java
+                        ),
+                        "NFC",
+                    )
 
-                    val nfcIntent = Intent(this@MainActivity, NfcActivity::class.java)
-                    ActivityLauncher(this@MainActivity, nfcIntent, "NFC")
-
+                    // Internal Testing Activity Launchers
                     if(dev) {
-                        val testIntent = Intent(this@MainActivity, TestActivity::class.java)
-                        ActivityLauncher(this@MainActivity, testIntent, "Test")
-                        Button(
-                            modifier = Modifier.padding(16.dp),
-                            onClick = {
-                                val intent = Intent(Settings.ACTION_WIRELESS_SETTINGS)
-                                startActivity(intent)
-                        }){ Text("ConnectionSettings") }
+                        ActivityLauncher(
+                            this@MainActivity,
+                            Intent(
+                                this@MainActivity,
+                                TestActivity::class.java
+                            ),
+                            "Test"
+                        )
+                        ActivityLauncher(
+                            this@MainActivity,
+                            Intent(
+                                this@MainActivity,
+                                ApiDemoActivity::class.java
+                            ),
+                            "ProDVX API Demo"
+                        )
                     }
 
+                    // Start API Token insertion dialog
+                    Button(onClick = { showTokenDialog = true }, modifier = Modifier.padding(16.dp)) { Text("Set new API Token")}
                     if (showTokenDialog) {
                         TokenInputDialog(
                             onDismissRequest = { showTokenDialog = false },
@@ -131,10 +167,9 @@ class MainActivity : ComponentActivity() {
                             }
                         )
                     }
-
-                    Button(onClick = { showTokenDialog = true }) { Text("Set new API Token")}
                 }
 
+                // Update the API token when it is updated through the application
                 LaunchedEffect(key1 = apiToken) {
                     if (apiToken != null) {
                         updateToken(apiToken!!)
@@ -144,6 +179,9 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Helper function to load the API token from the application's file directory if it exists.
+     */
     private fun loadApiTokenFromFile(tokenFile: File? = null): String? {
         val file = tokenFile ?: File(filesDir, "configuration/configuration.json")
         return if (file.exists()) {
@@ -160,6 +198,10 @@ class MainActivity : ComponentActivity() {
             null
         }
     }
+
+    /**
+     * Helper function to save the inserted token to file
+     */
     private fun saveTokenToFile(token: String) {
         val folder = File(filesDir, "configuration")
         if (!folder.exists()) folder.mkdir()
@@ -172,6 +214,10 @@ class MainActivity : ComponentActivity() {
             // Handle save error
         }
     }
+
+    /**
+     * Helper function to read the API token from a JSON file
+     */
     private fun readTokenFromUri(uri: Uri): String? {
         return try {
             contentResolver.openInputStream(uri)?.bufferedReader().use { reader ->
@@ -191,6 +237,9 @@ class MainActivity : ComponentActivity() {
 
 }
 
+/**
+ * Composable that launches an activity using a Button
+ */
 @Composable
 fun ActivityLauncher(ctx: Context, int: Intent, text: String, enabled: Boolean = true) {
     Button(
@@ -202,6 +251,9 @@ fun ActivityLauncher(ctx: Context, int: Intent, text: String, enabled: Boolean =
     }
 }
 
+/**
+ * Composable that displays a dialog for inserting the API token using either a filepicker or text input
+ */
 @Composable
 fun TokenInputDialog(
     onDismissRequest: () -> Unit,
