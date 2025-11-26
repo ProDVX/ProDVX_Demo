@@ -32,12 +32,20 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 
+/**
+ * NFC: Activity for scanning NFC Tags and displaying info
+ */
 class NfcActivity : ComponentActivity() {
     private val TAG = "NfcActivity"
+
+    // State for NfcAdapter (required)
     private var nfcAdapter: NfcAdapter? = null
     private var nfcIdState by mutableStateOf("Waiting for NFC Tag...")
     private var nfcDataState by mutableStateOf("No Data")
 
+    /**
+     * Retrieves the NfcAdapter as soon as the activity is created
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
@@ -52,6 +60,7 @@ class NfcActivity : ComponentActivity() {
             }
         }
     }
+
 
     @SuppressLint("UnsafeIntentLaunch")
     override fun onResume() {
@@ -68,10 +77,12 @@ class NfcActivity : ComponentActivity() {
                 PendingIntent.getActivity(
                     this, 0, intent, PendingIntent.FLAG_MUTABLE)
                 , null, null)
-
         }
     }
 
+    /**
+     * Receives the NFC intent and tries to get the information from it.
+     */
     @RequiresApi(Build.VERSION_CODES.TIRAMISU)
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
@@ -80,7 +91,6 @@ class NfcActivity : ComponentActivity() {
             intent.action == NfcAdapter.ACTION_TECH_DISCOVERED
         ) {
             val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
-
             tag?.id?.let { idBytes ->
                 val nfcTagId = bytesToHex(idBytes)
                 nfcIdState = "Tag ID: $nfcTagId"
@@ -91,13 +101,10 @@ class NfcActivity : ComponentActivity() {
                 val messages: List<NdefMessage> = rawMessages
                     .filterIsInstance<NdefMessage>()
                     .toList()
-
                 nfcDataState = readNdefRecords(messages)
             } else {
                 nfcDataState = "No NDEF Data Found"
             }
-
-
         }
     }
 
@@ -108,6 +115,9 @@ class NfcActivity : ComponentActivity() {
         }
     }
 
+    /**
+     * Helper function to translate the bytes to hexadecimals for the ID
+     */
     private fun bytesToHex(bytes: ByteArray): String {
         val sb = StringBuilder()
         for (b in bytes) {
@@ -116,6 +126,9 @@ class NfcActivity : ComponentActivity() {
         return sb.toString()
     }
 
+    /**
+     * Helper function to read data from NDEF cards
+     */
     private fun readNdefRecords(messages: List<NdefMessage>): String {
         val stringBuilder = StringBuilder()
 
@@ -126,8 +139,6 @@ class NfcActivity : ComponentActivity() {
                         val payload = record.payload
                         val textEncoding = if ((payload[0].toInt() and 0x80) == 0) Charsets.UTF_8 else Charsets.UTF_16
                         val langugeCodeLength = payload[0].toInt() and 0x3F
-
-
                         val text = String(
                             payload,
                             1 + langugeCodeLength,

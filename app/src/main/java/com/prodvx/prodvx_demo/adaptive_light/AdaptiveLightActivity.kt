@@ -1,6 +1,5 @@
 package com.prodvx.prodvx_demo.adaptive_light
 
-import android.R.attr.contentDescription
 import android.app.Activity
 import android.content.ComponentName
 import android.content.Context
@@ -11,12 +10,10 @@ import android.net.Uri
 import android.os.Bundle
 import android.os.IBinder
 import android.util.Log
-import android.util.Log.e
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.compose.setContent
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
@@ -46,9 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
-import coil.compose.rememberImagePainter
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
-import kotlin.jvm.java
 import kotlin.math.roundToInt
 
 class AdaptiveLightActivity : ComponentActivity() {
@@ -123,14 +118,10 @@ class AdaptiveLightActivity : ComponentActivity() {
         val imagePickerLauncher = rememberLauncherForActivityResult(
             contract = ActivityResultContracts.GetContent()
         ) { uri: Uri? ->
-            // This lambda is executed when the image picker activity finishes.
-            // The 'uri' will be null if the user cancelled the action.
             if (uri != null) {
-                // Only attempt to take persistent permission if a URI was selected.
                 try {
                     backgroundUri = uri
                 } catch (e: SecurityException) {
-                    // Log or handle the exception if permission cannot be granted
                     e.printStackTrace()
                 }
             }
