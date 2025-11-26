@@ -14,7 +14,7 @@ _To Come_:
 - Camera: Test some of the different ways to implement the camera on your APPC device
 - Scanner: See what is possible with the barcode scanner
 
-## Documantation
+## Documentation
 If looking to implement the features yourself, Search (in program/all files if possible) for the Feature with the following descriptors: \
 _Please note that not all features have been fully documented yet. Please investigate the respective Activity files to find all required code._ \
 _Some features have extensive functionality that is not essential to the functionality._
