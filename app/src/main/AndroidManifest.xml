@@ -17,7 +17,13 @@
 <!--    NFC: Required feature to use NFC-->
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
+<!--    Foreground Service -->
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
+
+
     <application
+        android:name=".App"
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
         android:fullBackupContent="@xml/backup_rules"
@@ -97,6 +103,7 @@
             android:exported="false"
             android:foregroundServiceType="mediaProjection"
             />
+        <service android:name=".test.TestService" />
     </application>
 
 </manifest>
