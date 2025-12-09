@@ -68,6 +68,7 @@ configuration.json
 
 ### LED Demo
 The LED Demo demonstrates how the LEDs are controlled via either SDK or ProDVX API.
+The SDK ius currently only implemented for the Type B and Type C Led Controllers. Please see the SDK documentation for your model [here](https://drive.google.com/file/d/1hjgXLdEUjeEcvE-VrGCZVuNLDNrolM9c/view?usp=sharing).
 In this menu, the LED Demo for S-Series can als be found.
 
 ### Adaptive Light
