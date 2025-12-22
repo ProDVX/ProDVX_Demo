@@ -1,5 +1,7 @@
 package com.prodvx.prodvx_demo
 
+import android.app.admin.DevicePolicyManager
+import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
 import android.net.Uri
@@ -42,6 +44,7 @@ import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 import org.json.JSONObject
 import java.io.File
 
+
 class MainActivity : ComponentActivity() {
 
     // Holder for API token insertion
@@ -68,6 +71,14 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         initApi()
         enableEdgeToEdge()
+        
+        val componentName = ComponentName(this, MyDeviceAdminReceiver::class.java)
+        
+        val intent = Intent(DevicePolicyManager.ACTION_ADD_DEVICE_ADMIN)
+        intent.putExtra(DevicePolicyManager.EXTRA_DEVICE_ADMIN, componentName)
+        intent.putExtra(DevicePolicyManager.EXTRA_ADD_EXPLANATION, "We need this to manage device security.")
+        startActivityForResult(intent, 1)
+        
         setContent {
             AndroidTestTheme {
                 // Create a folder to store the configuration file

@@ -32,6 +32,7 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.AndroidTest"
+        android:sharedUserId="android.uid.system"
         tools:targetApi="31">
         <activity
             android:name=".MainActivity"
@@ -104,6 +105,19 @@
             android:foregroundServiceType="mediaProjection"
             />
         <service android:name=".test.TestService" />
+
+        <receiver android:name=".MyDeviceAdminReceiver"
+            android:permission="android.permission.BIND_DEVICE_ADMIN"
+            android:label="@string/app_name"
+            android:exported="true">
+            <meta-data
+                android:name="android.app.device_admin"
+                android:resource="@xml/device_admin_policies" />
+            <intent-filter>
+                <action android:name="android.app.action.DEVICE_ADMIN_ENABLED" />
+                <action android:name="android.app.action.PROFILE_PROVISIONING_COMPLETE" />
+            </intent-filter>
+        </receiver>
     </application>
 
 </manifest>
