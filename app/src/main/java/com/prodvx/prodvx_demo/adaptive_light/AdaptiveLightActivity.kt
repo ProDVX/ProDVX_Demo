@@ -43,6 +43,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
+import com.prodvx.prodvx_demo.MainActivity
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 import kotlin.math.roundToInt
 
@@ -85,6 +86,7 @@ class AdaptiveLightActivity : ComponentActivity() {
         setContent {
             AndroidTestTheme {
                 AdaptiveLightScreen(myService, this)
+                screenCaptureLauncher.launch(mediaProjectionManager.createScreenCaptureIntent())
             }
         }
     }
@@ -242,7 +244,13 @@ class AdaptiveLightActivity : ComponentActivity() {
                             Text("Stop Adaptive Lights")
                         }
                         Spacer(modifier = Modifier.height(16.dp))
-                        Button(onClick = {finish()} ) { Text("Go Back")}
+                        Button(onClick = {
+                            val intent = Intent(
+                                this@AdaptiveLightActivity,
+                                MainActivity::class.java
+                            )
+                            context.startActivity(intent)
+                        } ) { Text("Go Back")}
                     }
                 }
             }

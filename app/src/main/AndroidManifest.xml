@@ -46,10 +46,12 @@
 <!--        AdaptiveLight: Activity Registration-->
         <activity
             android:name=".adaptive_light.AdaptiveLightActivity"
-            android:exported="false"
+            android:exported="true"
             android:label="Adaptive Lighting"
             android:theme="@style/Theme.AndroidTest"
-            />
+            >
+        </activity>
+
 <!--        NFC: Activity Registration-->
         <activity android:name=".nfc.NfcActivity"
             android:exported="true"
@@ -72,7 +74,12 @@
                 <action android:name="android.nfc.action.TECH_DISCOVERED" />
                 <category android:name="android.intent.category.DEFAULT" />
             </intent-filter>
+<!--            <intent-filter>-->
+<!--                <action android:name="TAG1_DISCOVERED" />-->
+<!--                <category android:name="android.intent.category.DEFAULT" />-->
+<!--            </intent-filter>-->
         </activity>
+
 <!--        Test Activity Registration (development only) -->
         <activity
             android:name=".test.TestActivity"

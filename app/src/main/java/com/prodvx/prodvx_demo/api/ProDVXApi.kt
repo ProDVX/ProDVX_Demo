@@ -18,7 +18,7 @@ private const val PORT = "3535"
 private const val VERSION = "v1"
 private const val API_URL = "${PROTOCOL}://${HOST}:${PORT}/${VERSION}"
 
-var TOKEN: String? = null
+var TOKEN: String? = "MEYCIQCeykYnEnmf3pH0KmmwR5qxLI6H4b7ZgqKLlTZWK1xVJgIhAO6C1CuS1Fm5RC26c99u62bJAAoAEXKp1_m10HbvWRyQ"
 
 fun initApi(){
     if(BuildConfig.IS_DEVELOPMENT) {

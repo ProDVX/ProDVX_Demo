@@ -1,3 +1,4 @@
+import java.io.FileInputStream
 import java.util.Properties
 
 plugins {
@@ -6,8 +7,10 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 }
 
+val keystoreproperties = rootProject.file("keystore.properties")
+val keystore = Properties()
+keystore.load(FileInputStream(keystoreproperties))
 
-// 1. Load the Properties file
 val secretsPropertiesFile = rootProject.file("secrets.properties")
 val secrets = Properties()
 
@@ -15,9 +18,11 @@ if(secretsPropertiesFile.exists()) {
     secrets.load(secretsPropertiesFile.inputStream())
 }
 
+
+
 android {
     namespace = "com.prodvx.prodvx_demo"
-    compileSdk = 35
+    compileSdk = 36
     buildFeatures.buildConfig = true
 
     defaultConfig {
@@ -26,20 +31,24 @@ android {
         //noinspection OldTargetApi
         targetSdk = 35
         versionCode = 7
-        versionName = "1.4.1"
+        versionName = "1.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
         buildConfigField("String", "API_TOKEN", "\"\"")
     }
 
+    signingConfigs {
+        create("AOSP-R25") {
+//            if (keystore.containsKey("keyStoreFile"))
+        }
+    }
+
     buildTypes {
         debug {
             buildConfigField("boolean", "IS_DEVELOPMENT", "true")
-
             val debugToken = secrets.getProperty("API_TOKEN", "")
             buildConfigField("String", "API_TOKEN", "\"$debugToken\"")
-
         }
         release {
             buildConfigField("boolean", "IS_DEVELOPMENT", "false")

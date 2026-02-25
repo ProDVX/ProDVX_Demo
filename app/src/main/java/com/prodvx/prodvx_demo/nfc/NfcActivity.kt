@@ -1,8 +1,12 @@
 package com.prodvx.prodvx_demo.nfc
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.app.PendingIntent
+import android.content.BroadcastReceiver
+import android.content.Context
 import android.content.Intent
+import android.content.IntentFilter
 import android.nfc.NdefMessage
 import android.nfc.NdefRecord
 import android.nfc.NfcAdapter
@@ -10,6 +14,7 @@ import android.nfc.Tag
 import android.os.Build
 import android.os.Bundle
 import android.os.Parcelable
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
@@ -19,6 +24,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -29,6 +35,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 
@@ -42,6 +49,10 @@ class NfcActivity : ComponentActivity() {
     private var nfcAdapter: NfcAdapter? = null
     private var nfcIdState by mutableStateOf("Waiting for NFC Tag...")
     private var nfcDataState by mutableStateOf("No Data")
+
+    companion object {
+        private const val ACTION_EXTERNAL_TAG = "TAG1_DISCOVERED"
+    }
 
     /**
      * Retrieves the NfcAdapter as soon as the activity is created
@@ -65,6 +76,10 @@ class NfcActivity : ComponentActivity() {
     @SuppressLint("UnsafeIntentLaunch")
     override fun onResume() {
         super.onResume()
+
+        //PNFC: Required for Pogo NFC implementation
+        registerExternalNfcReceiver()
+
         if(nfcAdapter == null) {
             return
         }
@@ -90,6 +105,7 @@ class NfcActivity : ComponentActivity() {
             intent.action == NfcAdapter.ACTION_NDEF_DISCOVERED ||
             intent.action == NfcAdapter.ACTION_TECH_DISCOVERED
         ) {
+            Log.i(TAG, "${intent.action}")
             val tag: Tag? = intent.getParcelableExtra(NfcAdapter.EXTRA_TAG, Tag::class.java)
             tag?.id?.let { idBytes ->
                 val nfcTagId = bytesToHex(idBytes)
@@ -110,6 +126,7 @@ class NfcActivity : ComponentActivity() {
 
     override fun onPause() {
         super.onPause()
+        unregisterReceiver(getIdReceiver)
         if (nfcAdapter?.isEnabled == true) {
             nfcAdapter?.disableForegroundDispatch(this)
         }
@@ -154,6 +171,73 @@ class NfcActivity : ComponentActivity() {
         }
         return if (stringBuilder.isNotEmpty()) stringBuilder.toString().trim() else "No NDEF Text Records Found"
     }
+
+    /**
+     * PNFC: Required for PogoNFC implementation
+     */
+    private lateinit var getIdReceiver : GetIdReceiver
+    private inner class GetIdReceiver : BroadcastReceiver() {
+        /**
+         * PNFC: Receives the intent sent by Pogo reader
+         */
+        override fun onReceive(context: Context, intent: Intent) {
+            Log.d(TAG, "Intent action: ${intent.action}")
+            if (intent.action == ACTION_EXTERNAL_TAG) {
+                val tagId = intent.getStringExtra("data")
+                val memoryData = intent.getStringExtra("memoryData")
+
+                tagId?.let { nfcIdState = "Tag ID: $it" }
+                memoryData?.let { nfcDataState = parseMemoryDataNdef(it) }
+            }
+        }
+    }
+
+    /**
+     * PNFC: Registers the receiver for intents
+     */
+    @SuppressLint("UnspecifiedRegisterReceiverFlag")
+    private fun registerExternalNfcReceiver() {
+        val filter = IntentFilter(ACTION_EXTERNAL_TAG)
+        getIdReceiver = GetIdReceiver()
+        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
+            registerReceiver(getIdReceiver, filter, RECEIVER_EXPORTED)
+        } else registerReceiver(getIdReceiver, filter)
+    }
+
+    /**
+     * PNFC: Parses the data from an NDEF formatted card for data extraction
+     */
+    private fun parseMemoryDataNdef(hex: String): String {
+        return try {
+            val bytes = hex.chunked(2).map { it.toInt(16).toByte() }.toByteArray()
+
+            // Skip first 8 header bytes, then find NDEF TLV (0x03)
+            var ndefStart = -1
+            for (i in 8 until bytes.size - 1) {
+                if (bytes[i] == 0x03.toByte()) {
+                    ndefStart = i
+                    break
+                }
+            }
+
+            if (ndefStart == -1) return "No NDEF data found"
+
+            val ndefLength = bytes[ndefStart + 1].toInt() and 0xFF
+            val availableBytes = bytes.size - (ndefStart + 2)
+            val actualLength = minOf(ndefLength, availableBytes)
+
+            Log.d(TAG, "ndefStart: $ndefStart, ndefLength: $ndefLength, actualLength: $actualLength")
+
+            val ndefBytes = bytes.copyOfRange(ndefStart + 2, ndefStart + 2 + actualLength)
+            Log.d(TAG, "ndefBytes hex: ${ndefBytes.joinToString("") { "%02X".format(it) }}")
+
+            val ndefMessage = NdefMessage(ndefBytes)
+            readNdefRecords(listOf(ndefMessage))
+        } catch (e: Exception) {
+            Log.e(TAG, "parseMemoryDataNdef error", e)
+            "Error parsing data: ${e.localizedMessage}"
+        }
+    }
 }
 
 @Composable
@@ -179,5 +263,14 @@ fun NfcScanScreen(nfcId: String, nfcData: String) {
             Text("Still scanning")
         }
         CircularProgressIndicator(modifier = Modifier.padding(top = 16.dp))
+        Button(
+            onClick = {
+                val localContext = LocalContext as Activity
+                localContext.finish()
+            },
+            modifier = Modifier.padding(top = 16.dp)
+        ) {
+            Text("Go Back")
+        }
     }
 }

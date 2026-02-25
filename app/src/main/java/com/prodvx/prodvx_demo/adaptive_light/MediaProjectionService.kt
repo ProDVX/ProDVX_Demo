@@ -85,7 +85,7 @@ class MediaProjectionService : Service() {
 
         if (resultCode != Activity.RESULT_CANCELED && data != null) {
             val mediaProjectionManager = getSystemService(Context.MEDIA_PROJECTION_SERVICE) as MediaProjectionManager
-            mediaProjection = mediaProjectionManager.getMediaProjection(resultCode!!, data)
+            mediaProjection = mediaProjectionManager.getMediaProjection(resultCode!!, data)!!
             startCapture()
         }
         return START_NOT_STICKY
