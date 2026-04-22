@@ -18,6 +18,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.core.app.ActivityCompat
 import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
+import java.lang.reflect.Field
 import kotlin.math.pow
 import kotlin.math.sqrt
 
@@ -45,24 +46,56 @@ class TestActivity: ComponentActivity() {
                 ) {
                     Button(
                         onClick = {
-                            val intent = Intent(this@TestActivity, TestService::class.java)
-                            intent.action = TestService.Actions.START.toString()
-                            startService(intent)
+                            printAllBuildFields()
+                            printAllBuildVersionFields()
                         }
-                    ) {
-                        Text("Start Service")
-                        }
-                    Button(
-                        onClick = {
-                            val intent = Intent(this@TestActivity, TestService::class.java)
-                            intent.action = TestService.Actions.STOP.toString()
-                            startService(intent)
-                        }
-                    ) {
-                        Text("Stop Service")
-                    }
+                    ) { Text("Log OS Information")}
+//                    Button(
+//                        onClick = {
+//                            val intent = Intent(this@TestActivity, TestService::class.java)
+//                            intent.action = TestService.Actions.START.toString()
+//                            startService(intent)
+//                        }
+//                    ) {
+//                        Text("Start Service")
+//                        }
+//                    Button(
+//                        onClick = {
+//                            val intent = Intent(this@TestActivity, TestService::class.java)
+//                            intent.action = TestService.Actions.STOP.toString()
+//                            startService(intent)
+//                        }
+//                    ) {
+//                        Text("Stop Service")
+//                    }
                 
                 }
+            }
+        }
+    }
+
+    fun printAllBuildFields() {
+        val fields: Array<Field> = Build::class.java.fields
+        for (field in fields) {
+            field.isAccessible = true
+            try {
+                val name = field.name
+                val value = field.get(null) // static fields, so null instance
+                println("Build.$name: $value")
+            } catch (e: Exception) {
+                println("Build.${field.name}: ERROR - ${e.message}")
+            }
+        }
+    }
+
+    fun printAllBuildVersionFields() {
+        val fields: Array<Field> = Build.VERSION::class.java.fields
+        for (field in fields) {
+            field.isAccessible = true
+            try {
+                println("Build.VERSION.${field.name}: ${field.get(null)}")
+            } catch (e: Exception) {
+                println("Build.VERSION.${field.name}: ERROR - ${e.message}")
             }
         }
     }

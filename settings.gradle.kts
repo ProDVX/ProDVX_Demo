@@ -19,6 +19,6 @@ dependencyResolutionManagement {
     }
 }
 
-rootProject.name = "AndroidTest"
+rootProject.name = "ProDVX_Demo"
 include(":app")
 include(":pledlibrary")

@@ -30,7 +30,7 @@ android {
         minSdk = 28
         //noinspection OldTargetApi
         targetSdk = 35
-        versionCode = 7
+        versionCode = 8
         versionName = "1.4.2"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
@@ -49,6 +49,13 @@ android {
             buildConfigField("boolean", "IS_DEVELOPMENT", "true")
             val debugToken = secrets.getProperty("API_TOKEN", "")
             buildConfigField("String", "API_TOKEN", "\"$debugToken\"")
+        }
+        create("staging") {
+            buildConfigField("boolean", "IS_DEVELOPMENT", "false")
+            val token = secrets.getProperty("API_TOKEN", "")
+            buildConfigField("String", "API_TOKEN", "\"${token}\"")
+            matchingFallbacks += listOf("debug", "release")
+            signingConfig = signingConfigs.getByName("debug")
         }
         release {
             buildConfigField("boolean", "IS_DEVELOPMENT", "false")
