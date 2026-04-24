@@ -60,6 +60,11 @@ class NfcActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         nfcAdapter = NfcAdapter.getDefaultAdapter(this)
+
+        // PNFC: Trigger the hardware initialization by setting the system property
+        // This effectively "wakes up" the NFC driver
+        setSystemProperty("persist.sys.set_ct_tag_type", "5")
+
         setContent {
             AndroidTestTheme {
                 Surface(
@@ -236,6 +241,21 @@ class NfcActivity : ComponentActivity() {
         } catch (e: Exception) {
             Log.e(TAG, "parseMemoryDataNdef error", e)
             "Error parsing data: ${e.localizedMessage}"
+        }
+    }
+
+    /** PNFC:
+     * Sets a system property using reflection.
+     * This is necessary because SystemProperties is hidden from the public Android SDK.
+     */
+    private fun setSystemProperty(key: String, value: String) {
+        try {
+            val systemPropertiesClass = Class.forName("android.os.SystemProperties")
+            val setMethod = systemPropertiesClass.getMethod("set", String::class.java, String::class.java)
+            setMethod.invoke(null, key, value)
+            Log.d(TAG, "Successfully set system property: $key = $value")
+        } catch (e: Exception) {
+            Log.e(TAG, "Failed to set system property: $key", e)
         }
     }
 }

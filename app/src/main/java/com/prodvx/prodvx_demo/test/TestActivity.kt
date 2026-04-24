@@ -1,8 +1,9 @@
 package com.prodvx.prodvx_demo.test
 
 import android.Manifest
+import android.bluetooth.BluetoothManager
 import android.content.Context
-import android.content.Intent
+import android.net.wifi.WifiManager
 import android.os.Build
 import android.os.Bundle
 import android.util.DisplayMetrics
@@ -21,6 +22,7 @@ import com.prodvx.prodvx_demo.ui.theme.AndroidTestTheme
 import java.lang.reflect.Field
 import kotlin.math.pow
 import kotlin.math.sqrt
+
 
 /**
  * This code is EXPERIMENTAL
@@ -48,31 +50,48 @@ class TestActivity: ComponentActivity() {
                         onClick = {
                             printAllBuildFields()
                             printAllBuildVersionFields()
+
                         }
-                    ) { Text("Log OS Information")}
-//                    Button(
-//                        onClick = {
-//                            val intent = Intent(this@TestActivity, TestService::class.java)
-//                            intent.action = TestService.Actions.START.toString()
-//                            startService(intent)
-//                        }
-//                    ) {
-//                        Text("Start Service")
-//                        }
-//                    Button(
-//                        onClick = {
-//                            val intent = Intent(this@TestActivity, TestService::class.java)
-//                            intent.action = TestService.Actions.STOP.toString()
-//                            startService(intent)
-//                        }
-//                    ) {
-//                        Text("Stop Service")
-//                    }
+                    ) { Text("Log OS information")}
+                    Button(
+                        onClick = {
+                            printSoftwareSystemFeatures()
+                        }
+                    ) { Text("Log Software Supported Features")}
+                    Button(
+                        onClick = {
+                            printAvailableSystemFeatures()
+                        }
+                    ) { Text("Log Actual Available Features")}
+
                 
                 }
             }
         }
     }
+
+    fun printSoftwareSystemFeatures() {
+        val pm = this.packageManager
+
+        val features = pm.systemAvailableFeatures
+        println("Supported Features:")
+        features.forEach {
+            println("${it.name}")
+        }
+    }
+
+    fun printAvailableSystemFeatures(){
+        val featureMap = HashMap<String, Boolean>()
+        featureMap.put("WiFi", this.getSystemService(WifiManager::class.java ) != null)
+        featureMap.put("Bluetooth", this.getSystemService(BluetoothManager::class.java).getAdapter() != null)
+
+        println("Supported Features:")
+        featureMap.forEach { string, bool ->
+            println("$string: $bool")
+        }
+    }
+
+
 
     fun printAllBuildFields() {
         val fields: Array<Field> = Build::class.java.fields
