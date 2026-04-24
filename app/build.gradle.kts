@@ -1,5 +1,6 @@
 import java.io.FileInputStream
 import java.util.Properties
+import kotlin.collections.all
 
 plugins {
     alias(libs.plugins.android.application)
@@ -30,8 +31,8 @@ android {
         minSdk = 28
         //noinspection OldTargetApi
         targetSdk = 35
-        versionCode = 8
-        versionName = "1.4.2"
+        versionCode = 9
+        versionName = "1.4.3"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -49,8 +50,9 @@ android {
             buildConfigField("boolean", "IS_DEVELOPMENT", "true")
             val debugToken = secrets.getProperty("API_TOKEN", "")
             buildConfigField("String", "API_TOKEN", "\"$debugToken\"")
+            applicationIdSuffix = ".debug"
         }
-        create("staging") {
+        create("demo") {
             buildConfigField("boolean", "IS_DEVELOPMENT", "false")
             val token = secrets.getProperty("API_TOKEN", "")
             buildConfigField("String", "API_TOKEN", "\"${token}\"")
@@ -75,6 +77,15 @@ android {
     }
     buildFeatures {
         compose = true
+    }
+    applicationVariants.all {
+        val variant = this
+        outputs.all {
+             val output = this as com.android.build.gradle.internal.api.BaseVariantOutputImpl
+             val buildType = variant.buildType.name
+             val versionName = variant.versionName
+             output.outputFileName= "ProDVX_Demo-${buildType}-v${versionName}.apk"
+        }
     }
 }
 

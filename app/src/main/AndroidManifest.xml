@@ -12,9 +12,9 @@
 <!--    AdaptiveLight: Required permissions for image gallery (test image) -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" />
 
-<!--    NFC: Required permission for NFC usage-->
+<!--   NFC: | PNFC: Required permission for NFC usage-->
     <uses-permission android:name="android.permission.NFC" />
-<!--    NFC: Required feature to use NFC-->
+<!--    NFC: | PNFC: Required feature to use NFC-->
     <uses-feature android:name="android.hardware.nfc" android:required="false" />
 
 <!--    Foreground Service -->
@@ -52,7 +52,7 @@
             >
         </activity>
 
-<!--        NFC: Activity Registration-->
+<!--        NFC: | PNFC: Activity Registration-->
         <activity android:name=".nfc.NfcActivity"
             android:exported="true"
             android:launchMode="singleTop"

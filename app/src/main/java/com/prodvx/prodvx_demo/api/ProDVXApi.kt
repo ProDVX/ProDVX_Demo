@@ -21,7 +21,7 @@ private const val API_URL = "${PROTOCOL}://${HOST}:${PORT}/${VERSION}"
 var TOKEN: String? = ""
 
 fun initApi(){
-    if(BuildConfig.BUILD_TYPE == "staging" || BuildConfig.IS_DEVELOPMENT) {
+    if(BuildConfig.BUILD_TYPE == "demo" || BuildConfig.IS_DEVELOPMENT) {
         TOKEN = BuildConfig.API_TOKEN
     }
 }

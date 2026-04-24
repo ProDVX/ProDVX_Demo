@@ -1,0 +1,37 @@
+{
+  "version": 3,
+  "artifactType": {
+    "type": "APK",
+    "kind": "Directory"
+  },
+  "applicationId": "com.prodvx.prodvx_demo",
+  "variantName": "demo",
+  "elements": [
+    {
+      "type": "SINGLE",
+      "filters": [],
+      "attributes": [],
+      "versionCode": 9,
+      "versionName": "1.4.3",
+      "outputFile": "ProDVX_Demo-demo-v1.4.3.apk"
+    }
+  ],
+  "elementType": "File",
+  "baselineProfiles": [
+    {
+      "minApi": 28,
+      "maxApi": 30,
+      "baselineProfiles": [
+        "baselineProfiles/1/ProDVX_Demo-demo-v1.4.3.dm"
+      ]
+    },
+    {
+      "minApi": 31,
+      "maxApi": 2147483647,
+      "baselineProfiles": [
+        "baselineProfiles/0/ProDVX_Demo-demo-v1.4.3.dm"
+      ]
+    }
+  ],
+  "minSdkVersionForDexing": 28
+}
