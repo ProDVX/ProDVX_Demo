@@ -1,7 +1,6 @@
 # ProDVX Android Demo Application
 A demo application that showcases the different uses of the APPC devices.\
 Can also be used for a combined sdk of different features and functionalities.\
-_Documentation in progress_
 
 ## Features
 - Adaptive Light technology that adapts the LED ring to the screen content. (S-Series only, API required)
@@ -25,6 +24,7 @@ _Some features have extensive functionality that is not essential to the functio
 - LED -> _LED:_
 - S-Series Leds -> _SLED:_
 - PoGo LED -> _PLED:_
+- PoGo NFC -> _PNFC:_
 
 ## Installation
 - Download the App from the releases tab.
