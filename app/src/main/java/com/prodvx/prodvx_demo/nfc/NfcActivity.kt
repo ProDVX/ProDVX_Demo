@@ -19,19 +19,28 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -49,9 +58,20 @@ class NfcActivity : ComponentActivity() {
     private var nfcAdapter: NfcAdapter? = null
     private var nfcIdState by mutableStateOf("Waiting for NFC Tag...")
     private var nfcDataState by mutableStateOf("No Data")
+    private var selectedTagType by mutableStateOf(TAG_TYPE_OPTIONS.entries.first())
 
     companion object {
         private const val ACTION_EXTERNAL_TAG = "TAG1_DISCOVERED"
+        private const val ACTION2_EXTERNAL_TAG = "action.TAG_DISCOVERED"
+
+        val TAG_TYPE_OPTIONS = linkedMapOf(
+            "ISO14443A (NDEF)" to "0",
+            "ISO14443B" to "1",
+            "NFC Type3 (Felica)" to "2",
+            "ISO15693" to "3",
+            "NFC Type1" to "4",
+            "All Protocols (ID only)" to "5"
+        )
     }
 
     /**
@@ -63,7 +83,7 @@ class NfcActivity : ComponentActivity() {
 
         // PNFC: Trigger the hardware initialization by setting the system property
         // This effectively "wakes up" the NFC driver
-        setSystemProperty("persist.sys.set_ct_tag_type", "5")
+        setSystemProperty("persist.sys.set_ct_tag_type", selectedTagType.value)
 
         setContent {
             AndroidTestTheme {
@@ -71,12 +91,20 @@ class NfcActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    NfcScanScreen(nfcId = nfcIdState, nfcData = nfcDataState)
+                    NfcScanScreen(
+                        nfcId = nfcIdState,
+                        nfcData = nfcDataState,
+                        selectedTagType = selectedTagType,
+                        tagTypeOptions = TAG_TYPE_OPTIONS,
+                        onTagTypeSelected = { entry ->
+                            selectedTagType = entry as MutableMap.MutableEntry<String, String>
+                            setSystemProperty("persist.sys.set_ct_tag_type", entry.value)
+                        }
+                    )
                 }
             }
         }
     }
-
 
     @SuppressLint("UnsafeIntentLaunch")
     override fun onResume() {
@@ -187,9 +215,15 @@ class NfcActivity : ComponentActivity() {
          */
         override fun onReceive(context: Context, intent: Intent) {
             Log.d(TAG, "Intent action: ${intent.action}")
-            if (intent.action == ACTION_EXTERNAL_TAG) {
-                val tagId = intent.getStringExtra("data")
-                val memoryData = intent.getStringExtra("memoryData")
+
+            if (intent.action == ACTION2_EXTERNAL_TAG || intent.action == ACTION_EXTERNAL_TAG) {
+                intent.extras?.keySet()?.forEach { key ->
+                    Log.d(TAG, "Extra key: $key, value: ${intent.extras?.get(key)}")
+                }
+
+                val tagId = intent.getStringExtra("UID")
+                val memoryData = intent.getStringExtra("MEMORYDATA")
+                val type = intent.getStringExtra("TYPE")
 
                 tagId?.let { nfcIdState = "Tag ID: $it" }
                 memoryData?.let { nfcDataState = parseMemoryDataNdef(it) }
@@ -202,7 +236,9 @@ class NfcActivity : ComponentActivity() {
      */
     @SuppressLint("UnspecifiedRegisterReceiverFlag")
     private fun registerExternalNfcReceiver() {
-        val filter = IntentFilter(ACTION_EXTERNAL_TAG)
+        val filter = IntentFilter(ACTION2_EXTERNAL_TAG).also {
+            it.addAction(ACTION_EXTERNAL_TAG)
+        }
         getIdReceiver = GetIdReceiver()
         if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU){
             registerReceiver(getIdReceiver, filter, RECEIVER_EXPORTED)
@@ -243,31 +279,80 @@ class NfcActivity : ComponentActivity() {
             "Error parsing data: ${e.localizedMessage}"
         }
     }
+}
 
-    /** PNFC:
-     * Sets a system property using reflection.
-     * This is necessary because SystemProperties is hidden from the public Android SDK.
-     */
-    private fun setSystemProperty(key: String, value: String) {
-        try {
-            val systemPropertiesClass = Class.forName("android.os.SystemProperties")
-            val setMethod = systemPropertiesClass.getMethod("set", String::class.java, String::class.java)
-            setMethod.invoke(null, key, value)
-            Log.d(TAG, "Successfully set system property: $key = $value")
-        } catch (e: Exception) {
-            Log.e(TAG, "Failed to set system property: $key", e)
-        }
+/** PNFC:
+ * Sets a system property using reflection.
+ * This is necessary because SystemProperties is hidden from the public Android SDK.
+ */
+private fun setSystemProperty(key: String, value: String) {
+    try {
+        val systemPropertiesClass = Class.forName("android.os.SystemProperties")
+        val setMethod = systemPropertiesClass.getMethod("set", String::class.java, String::class.java)
+        setMethod.invoke(null, key, value)
+        Log.d("NfcActivity", "Successfully set system property: $key = $value")
+    } catch (e: Exception) {
+        Log.e("NfcActivity", "Failed to set system property: $key", e)
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NfcScanScreen(nfcId: String, nfcData: String) {
+fun NfcScanScreen(
+    nfcId: String,
+    nfcData: String,
+    selectedTagType: Map.Entry<String, String>,
+    tagTypeOptions: Map<String, String>,
+    onTagTypeSelected: (Map.Entry<String, String>) -> Unit
+) {
+    var expanded by remember { mutableStateOf(false) }
+
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Text(text = "NFC Scanner", style = MaterialTheme.typography.headlineMedium)
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Tag type dropdown
+        ExposedDropdownMenuBox(
+            expanded = expanded,
+            onExpandedChange = { expanded = !expanded },
+            modifier = Modifier
+                .padding(horizontal = 32.dp)
+                .width(500.dp)
+
+        ) {
+            TextField(
+                value = selectedTagType.key,
+                onValueChange = {},
+                readOnly = true,
+                label = { Text("Tag Protocol") },
+                trailingIcon = { ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded) },
+                modifier = Modifier
+                    .menuAnchor()
+                    .fillMaxWidth()
+            )
+            ExposedDropdownMenu(
+                expanded = expanded,
+                onDismissRequest = { expanded = false }
+            ) {
+                tagTypeOptions.entries.forEach { entry ->
+                    DropdownMenuItem(
+                        text = { Text("${entry.key} (${entry.value})") },
+                        onClick = {
+                            onTagTypeSelected(entry)
+                            expanded = false
+                        }
+                    )
+                }
+            }
+        }
+
+        Spacer(modifier = Modifier.height(16.dp))
+
         Text(
             text = nfcId,
             modifier = Modifier.padding(top = 16.dp),

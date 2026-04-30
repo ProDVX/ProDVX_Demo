@@ -1,3 +1,5 @@
+import com.android.build.gradle.ProguardFiles.getDefaultProguardFile
+import org.gradle.language.nativeplatform.internal.Dimensions.applicationVariants
 import java.io.FileInputStream
 import java.util.Properties
 import kotlin.collections.all
@@ -31,8 +33,8 @@ android {
         minSdk = 28
         //noinspection OldTargetApi
         targetSdk = 35
-        versionCode = 9
-        versionName = "1.4.3"
+        versionCode = 10
+        versionName = "1.4.4"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
 
@@ -41,7 +43,12 @@ android {
 
     signingConfigs {
         create("AOSP-R25") {
-//            if (keystore.containsKey("keyStoreFile"))
+            if (keystore.containsKey("AOSP_KeystoreFile")) {
+                storeFile = file(keystore.getProperty("AOSP_KeystoreFile"))
+                storePassword = keystore.getProperty("AOSP_KeystorePassword")
+                keyAlias = keystore.getProperty("AOSP_KeystoreAlias")
+                keyPassword = keystore.getProperty("AOSP_KeyPassword")
+            }
         }
     }
 
@@ -52,20 +59,17 @@ android {
             buildConfigField("String", "API_TOKEN", "\"$debugToken\"")
             applicationIdSuffix = ".debug"
         }
-        create("demo") {
+        release {
             buildConfigField("boolean", "IS_DEVELOPMENT", "false")
             val token = secrets.getProperty("API_TOKEN", "")
             buildConfigField("String", "API_TOKEN", "\"${token}\"")
             matchingFallbacks += listOf("debug", "release")
-            signingConfig = signingConfigs.getByName("debug")
-        }
-        release {
-            buildConfigField("boolean", "IS_DEVELOPMENT", "false")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro"
             )
+            signingConfig = signingConfigs.getByName("AOSP-R25")
         }
     }
     compileOptions {

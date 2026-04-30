@@ -21,9 +21,7 @@ private const val API_URL = "${PROTOCOL}://${HOST}:${PORT}/${VERSION}"
 var TOKEN: String? = ""
 
 fun initApi(){
-    if(BuildConfig.BUILD_TYPE == "demo" || BuildConfig.IS_DEVELOPMENT) {
-        TOKEN = BuildConfig.API_TOKEN
-    }
+    TOKEN = BuildConfig.API_TOKEN
 }
 
 suspend fun sendRequest(method: HttpMethod, endpoint: String, params: Map<String, String>? = null): HttpResponse? {

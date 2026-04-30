@@ -94,7 +94,6 @@ class InactivityTimerViewModel : androidx.lifecycle.ViewModel() {
     // --- Your Custom API Call Function ---
     private fun callLocalApi() {
         Log.i(TAG, "--- Executing custom API call due to inactivity from ViewModel! ---")
-        // TODO: Implement your actual API call logic here.
 
         CoroutineScope(Dispatchers.IO).launch {
             try {
